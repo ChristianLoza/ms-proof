@@ -1,27 +1,31 @@
 package co.edu.uniandes.mati.service.graphql;
 
-import co.edu.uniandes.mati.entity.Pregunta;
-import co.edu.uniandes.mati.entity.PreguntaAPI;
+
+import co.edu.uniandes.mati.entity.PreguntaResponse;
 import io.smallrye.common.annotation.Blocking;
+import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import jakarta.ws.rs.GET;
 import jakarta.ws.rs.Path;
 import jakarta.ws.rs.Produces;
 import jakarta.ws.rs.core.MediaType;
+import org.eclipse.microprofile.graphql.Description;
+import org.eclipse.microprofile.graphql.GraphQLApi;
+import org.eclipse.microprofile.graphql.Name;
+import org.eclipse.microprofile.graphql.Query;
 
-import java.util.List;
-
-@Path("/")
+@GraphQLApi
+@ApplicationScoped
 public class RequestQuestion {
 
     @Inject
     PreguntaAPI preguntaAPI;
 
-    @GET
-    @Produces(MediaType.APPLICATION_JSON)
+    @Query
+    @Description("List data")
     @Blocking
-    public List<Pregunta> getQuestion() {
-        return preguntaAPI.getProof("Java").getGetPreguntas();
+    public PreguntaResponse getQuestion(@Name("tema") String tema) {
+       return preguntaAPI.consumeGrapQL(tema);
     }
 
 }
