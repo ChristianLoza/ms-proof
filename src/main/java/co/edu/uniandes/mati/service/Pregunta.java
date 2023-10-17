@@ -1,12 +1,10 @@
-package co.edu.uniandes.mati.entity;
+package co.edu.uniandes.mati.service;
 
-import lombok.Data;
 
 import java.util.List;
 
-@Data
+@lombok.Data
 public class Pregunta {
     private String nombre_pregunta;
-    private String tema;
     private List<Opcion> opciones;
 }

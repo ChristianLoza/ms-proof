@@ -1,4 +1,4 @@
-package co.edu.uniandes.mati.entity;
+package co.edu.uniandes.mati.service;
 
 import lombok.Data;
 
