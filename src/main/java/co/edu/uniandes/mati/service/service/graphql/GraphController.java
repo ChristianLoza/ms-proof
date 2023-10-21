@@ -2,17 +2,13 @@ package co.edu.uniandes.mati.service.service.graphql;
 
 import java.util.Date;
 import java.util.List;
-import java.util.Optional;
 import java.util.Random;
 
-import io.smallrye.mutiny.Uni;
-import jakarta.transaction.Transactional;
 import org.eclipse.microprofile.graphql.GraphQLApi;
 import org.eclipse.microprofile.graphql.Query;
 import org.eclipse.microprofile.reactive.messaging.Channel;
 import org.eclipse.microprofile.reactive.messaging.Emitter;
 import org.eclipse.microprofile.reactive.messaging.Incoming;
-import org.eclipse.microprofile.reactive.messaging.Outgoing;
 import org.jboss.logging.Logger;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -23,7 +19,6 @@ import co.edu.uniandes.mati.service.domain.vo.GeneratePayment;
 import co.edu.uniandes.mati.service.domain.vo.MailAlert;
 import co.edu.uniandes.mati.service.domain.vo.Pregunta;
 import co.edu.uniandes.mati.service.infrastructure.repository.InputRepository;
-import co.edu.uniandes.mati.service.infrastructure.repository.PaymentRepository;
 import io.smallrye.common.annotation.Blocking;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
@@ -46,9 +41,13 @@ public class GraphController {
 	Emitter<String> emitter;
 	@Channel("TOPIC_MAIL")
 	Emitter<String> emitterMail;
+
+	@Channel("TOPIC_PROOF_LIST")
+	Emitter<String> emitterList;
 	@Inject
 	ObjectMapper objectMapper;
 	Input result = new Input();
+	@SneakyThrows
 	@Query
 	public Input generateTest(Input input) {
 		input.setAmountOfQuestion(getListQuestionFromApi(input.getTechnology()).size());
@@ -59,6 +58,7 @@ public class GraphController {
 		generatePayment.setEmail(result.getRequestdBy());
 		generatePayment.setIdTest(result.getId());
 		sendKafka(generatePayment);
+		emitterList.send(objectMapper.writeValueAsString(inputRepository.findAll()));
 		return result;
 	}
 
