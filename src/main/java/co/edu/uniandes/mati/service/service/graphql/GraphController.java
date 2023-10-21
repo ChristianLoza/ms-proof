@@ -42,17 +42,18 @@ public class GraphController {
 	ClientApi clientApi;
 	@Inject
 	InputRepository inputRepository;
-	@Inject
-	PaymentRepository paymentRepository;
 	@Channel("TOPIC_PROOF_GENERATE")
 	Emitter<String> emitter;
+	@Channel("TOPIC_MAIL")
+	Emitter<String> emitterMail;
 	@Inject
 	ObjectMapper objectMapper;
+	Input result = new Input();
 	@Query
 	public Input generateTest(Input input) {
 		input.setAmountOfQuestion(getListQuestionFromApi(input.getTechnology()).size());
 		input.setDate(new Date());
-		Input result =  inputRepository.save(input);
+		result =  inputRepository.save(input);
 		log.info("### Created test" + result);
 		GeneratePayment generatePayment = new GeneratePayment();
 		generatePayment.setEmail(result.getRequestdBy());
@@ -64,18 +65,14 @@ public class GraphController {
 
 	@SneakyThrows
 	@Incoming("uniandes-payment")
-	@Outgoing("uniandes-mail")
-	public MailAlert consumeKafkaPayment(String paymentCheck) {
-		PaymentCheck getPaymentCheck  = objectMapper.readValue(paymentCheck, PaymentCheck.class);
-		return findPaymentCheck(getPaymentCheck);
-	}
+	public void consumeKafkaPayment(String paymentCheck) {
+		log.info("### consumeKafkaPayment" + paymentCheck);
+		PaymentCheck getPaymentCheck = objectMapper.readValue(paymentCheck, PaymentCheck.class);
+		if (!getPaymentCheck.getStatus().equals(null)) {
+			MailAlert mailAlert = new MailAlert(result.getRequestType(),getPaymentCheck.getEmail(), new Random().nextInt(100));
 
-	private MailAlert findPaymentCheck(PaymentCheck getPaymentCheck) {
-		Optional<Input> result = inputRepository.findById(getPaymentCheck.getIdTest());
-		if(result.isPresent()) {
-			MailAlert mailAlert = new MailAlert(result.get().getRequestType(), result.get().getRequestdBy(), new Random(80).nextInt()+20);
+			emitterMail.send(objectMapper.writeValueAsString(mailAlert));
 		}
-		return null;
 	}
 
 	@SneakyThrows

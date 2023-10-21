@@ -17,4 +17,5 @@ public class PaymentCheck {
     private Long idTest;
     private Boolean status;
     private Date paymentDate;
+    private String email;
 }
