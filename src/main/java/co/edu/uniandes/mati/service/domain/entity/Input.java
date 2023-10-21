@@ -1,5 +1,4 @@
-package co.edu.uniandes.mati.service;
-
+package co.edu.uniandes.mati.service.domain.entity;
 
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;

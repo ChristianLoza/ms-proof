@@ -1,7 +1,7 @@
-package co.edu.uniandes.mati.service;
+package co.edu.uniandes.mati.service.service.graphql;
 
+import co.edu.uniandes.mati.service.domain.vo.Pregunta;
 import io.smallrye.graphql.client.typesafe.api.GraphQLClientApi;
-import jakarta.inject.Inject;
 import org.eclipse.microprofile.graphql.Name;
 import org.eclipse.microprofile.graphql.Query;
 

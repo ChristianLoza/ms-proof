@@ -1,4 +1,4 @@
-package co.edu.uniandes.mati.service;
+package co.edu.uniandes.mati.service.domain.vo;
 
 
 import java.util.List;

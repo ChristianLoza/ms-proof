@@ -8,6 +8,27 @@ If you want to learn more about Quarkus, please visit its website: https://quark
 
 You can run your application in dev mode that enables live coding using:
 
+Execute GraphQL
+
+```
+{
+  generateTest(input: {
+    amountOfQuestion: 10
+    date: "2023-10-17T12:00:00Z"
+    requestType: "SampleRequest"
+    requestdBy: "christianlzap@gmail.com"
+    technology: "Java"
+  }) {
+    amountOfQuestion
+    date
+    requestType
+    requestdBy
+    technology
+  }
+}
+```
+
+
 ```shell script
 ./mvnw compile quarkus:dev
 ```
