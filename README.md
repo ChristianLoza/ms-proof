@@ -10,6 +10,20 @@ You can run your application in dev mode that enables live coding using:
 
 Execute GraphQL
 
+``` 
+query  {
+  allQuestionByItem(item:"JAVA") {
+    nombre_pregunta
+    opciones {
+      nombre_opcion
+    }
+  }
+}
+```
+
+
+
+
 ```
 {
   generateTest(input: {

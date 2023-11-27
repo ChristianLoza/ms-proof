@@ -4,6 +4,9 @@ import java.util.Date;
 import java.util.List;
 import java.util.Random;
 
+import co.edu.uniandes.mati.service.domain.vo.Alert;
+import co.edu.uniandes.mati.service.domain.vo.Payment;
+import org.eclipse.microprofile.graphql.Description;
 import org.eclipse.microprofile.graphql.GraphQLApi;
 import org.eclipse.microprofile.graphql.Query;
 import org.eclipse.microprofile.reactive.messaging.Channel;
@@ -29,10 +32,8 @@ import lombok.SneakyThrows;
 @Blocking
 public class GraphController {
 
-
 	@Inject
 	Logger log;
-
 	@Inject
 	ClientApi clientApi;
 	@Inject
@@ -42,6 +43,9 @@ public class GraphController {
 	@Channel("TOPIC_MAIL")
 	Emitter<String> emitterMail;
 
+	@Channel("TOPIC_BLOCKCHAIN")
+	Emitter<String> emitterBlockChain;
+
 	@Channel("TOPIC_PROOF_LIST")
 	Emitter<String> emitterList;
 	@Inject
@@ -49,10 +53,11 @@ public class GraphController {
 	Input result = new Input();
 	@SneakyThrows
 	@Query
+	@Description("Generate new proof")
 	public Input generateTest(Input input) {
 		input.setAmountOfQuestion(getListQuestionFromApi(input.getTechnology()).size());
 		input.setDate(new Date());
-		result =  inputRepository.save(input);
+		result = inputRepository.save(input);
 		log.info("### Created test" + result);
 		GeneratePayment generatePayment = new GeneratePayment();
 		generatePayment.setEmail(result.getRequestdBy());
@@ -62,18 +67,47 @@ public class GraphController {
 		return result;
 	}
 
+	@Query
+	@Description("Get All Questions from GrahpQL Service")
+	public List<Pregunta> getAllQuestionByItem(String item) {
+		return getListQuestionFromApi(item);
+	}
+
 
 	@SneakyThrows
 	@Incoming("uniandes-payment")
 	public void consumeKafkaPayment(String paymentCheck) {
 		log.info("### consumeKafkaPayment" + paymentCheck);
 		PaymentCheck getPaymentCheck = objectMapper.readValue(paymentCheck, PaymentCheck.class);
-		if (!getPaymentCheck.getStatus().equals(null)) {
-			MailAlert mailAlert = new MailAlert(result.getRequestType(),getPaymentCheck.getEmail(), new Random().nextInt(100));
+		if (!getPaymentCheck.getStatus().equals(null) || getPaymentCheck.getStatus().equals("")) {
+			Integer randomCalification = new Random().nextInt(100);
+			MailAlert mailAlert = new MailAlert(result.getRequestType(), getPaymentCheck.getEmail(),
+					randomCalification);
+			Alert alert = new Alert(getPaymentCheck.getEmail(),randomCalification);
 
 			emitterMail.send(objectMapper.writeValueAsString(mailAlert));
+			emitterBlockChain.send(objectMapper.writeValueAsString(alert));
 		}
 	}
+
+
+	@SneakyThrows
+	@Incoming("uniandes-post-payment")
+	public void consumeKafkaPaymentPostPayment(String paymentCheck) {
+		log.info("### postpayment " + paymentCheck);
+		Payment getPaymentCheck = objectMapper.readValue(paymentCheck, Payment.class);
+
+		Integer randomCalification = new Random().nextInt(100);
+
+		MailAlert mailAlert = new MailAlert(result.getRequestType(), getPaymentCheck.getUser().getEmail(),
+				randomCalification);
+		Alert alert = new Alert(getPaymentCheck.getUser().getEmail(),randomCalification);
+
+		emitterMail.send(objectMapper.writeValueAsString(mailAlert));
+		emitterBlockChain.send(objectMapper.writeValueAsString(alert));
+
+	}
+
 
 	@SneakyThrows
 	private void sendKafka(GeneratePayment generatePayment) {
